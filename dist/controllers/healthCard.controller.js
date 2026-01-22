@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyHealthCardRequest = exports.getHealthCardRequests = exports.deleteHealthCard = exports.updateHealthCardStatus = exports.getHealthCardByCnic = exports.getHealthCardById = exports.getHealthCards = exports.applyHealthCard = void 0;
 const cloudinary = require("../utils/cloudinary");
 const HealthCard_1 = __importDefault(require("../models/HealthCard"));
-// Format CNIC -> 35201-7329319-9
+// Format CNIC -> 
 function formatCNIC(cnic) {
     const digits = cnic.replace(/\D/g, "");
     if (digits.length !== 13)
@@ -98,9 +98,10 @@ const getHealthCardByCnic = async (req, res) => {
     try {
         const { cnic } = req.params;
         const digitsOnly = cnic.replace(/\D/g, "");
-        const card = await HealthCard_1.default.findOne({ cnic: digitsOnly });
+        // Fetch only if status is "approved"
+        const card = await HealthCard_1.default.findOne({ cnic: digitsOnly, status: "approved" });
         if (!card) {
-            return res.status(404).json({ success: false, message: "Card not found" });
+            return res.status(404).json({ success: false, message: "Card not found or not approved yet" });
         }
         res.json({ success: true, healthCard: card });
     }

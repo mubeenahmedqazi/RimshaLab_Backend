@@ -1,45 +1,46 @@
+// config/db.ts
 import mongoose from "mongoose";
 
 const connectDB = async () => {
   try {
-    console.log("🔍 Checking MongoDB connection...");
+    console.log("🔍 Attempting to connect to MongoDB...");
     
-    // Try both common environment variable names
-    const mongoURI = process.env.MONGODB_URI || process.env.MONGO_URI;
+    // Check both common environment variable names
+    const mongoURI = process.env.MONGO_URI || process.env.MONGODB_URI;
     
-    console.log("MONGODB_URI exists:", !!process.env.MONGODB_URI);
-    console.log("MONGO_URI exists:", !!process.env.MONGO_URI);
+    console.log("Environment check:");
+    console.log("- MONGO_URI exists:", !!process.env.MONGO_URI);
+    console.log("- MONGODB_URI exists:", !!process.env.MONGODB_URI);
+    console.log("- NODE_ENV:", process.env.NODE_ENV);
     
     if (!mongoURI) {
-      throw new Error("MongoDB URI is missing in environment variables!");
+      throw new Error("❌ MongoDB URI is not defined in environment variables! Check Vercel settings.");
     }
 
-    console.log("🔗 Connecting to MongoDB...");
-    
-    // Simplified for Mongoose v6+
+    // Connect with timeout options
     const conn = await mongoose.connect(mongoURI, {
       serverSelectionTimeoutMS: 30000, // 30 seconds
       socketTimeoutMS: 45000,
     });
-    
+
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
     console.log(`📊 Database: ${conn.connection.name}`);
     
-    // Event listeners
-    mongoose.connection.on('error', (err) => {
-      console.error('❌ MongoDB connection error:', err);
-    });
-    
-    mongoose.connection.on('disconnected', () => {
-      console.log('⚠️ MongoDB disconnected');
-    });
-    
-    // Return the connection
     return conn;
     
   } catch (error: any) {
-    console.error(`❌ MongoDB Connection Error: ${error.message}`);
-    console.error("Error details:", error);
+    console.error("❌ MongoDB Connection Failed!");
+    console.error("Error:", error.message);
+    console.error("Full error:", error);
+    
+    // Helpful debugging info
+    if (error.message.includes("ENOTFOUND") || error.message.includes("getaddrinfo")) {
+      console.error("\n🔧 TROUBLESHOOTING:");
+      console.error("1. Check MongoDB Atlas Network Access - add IP 0.0.0.0/0");
+      console.error("2. Verify connection string format");
+      console.error("3. Check if MongoDB cluster is running");
+    }
+    
     process.exit(1);
   }
 };

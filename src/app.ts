@@ -1,5 +1,5 @@
 import express from "express";
-//import cors from "cors";
+import cors from "cors";  // ✅ UNCOMMENTED
 import fs from "fs";
 import path from "path";
 import mongoose from "mongoose";
@@ -12,14 +12,15 @@ import bookingRoutes from "./routes/bookingRoutes";
 const app = express();
 
 // ========== MIDDLEWARE ==========
-  // app.use(cors({
-  //   origin: [
-  //     "http://localhost:3001",
-  //     "https://rimsha-lab-frontend.vercel.app",
-  //     "https://rimsha-lab-admin.vercel.app"
-  //   ],
-  //   credentials: true,
-  // }));
+app.use(cors({  // ✅ UNCOMMENTED
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "https://rimsha-lab-frontend.vercel.app",
+    "https://rimsha-lab-admin.vercel.app"
+  ],
+  credentials: true,
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -72,22 +73,23 @@ app.get("/db-status", (req, res) => {
   });
 });
 
+// ❌❌❌ DELETE THIS ENTIRE BLOCK ❌❌❌
 // ========== DATABASE CHECK ==========
-const dbCheck = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  if (mongoose.connection.readyState !== 1) {
-    return res.status(503).json({
-      success: false,
-      message: "Database not available",
-      error: "Try changing MongoDB password (remove @ symbol) or check network access"
-    });
-  }
-  next();
-};
+// const dbCheck = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+//   if (mongoose.connection.readyState !== 1) {
+//     return res.status(503).json({
+//       success: false,
+//       message: "Database not available",
+//       error: "Try changing MongoDB password (remove @ symbol) or check network access"
+//     });
+//   }
+//   next();
+// };
 
 // ========== ROUTES ==========
-app.use("/api/health-card", dbCheck, healthCardRoutes);
-app.use("/api/contact", dbCheck, contactRoutes);
-app.use("/api/bookings", dbCheck, bookingRoutes);
+app.use("/api/health-card", healthCardRoutes);  // ✅ REMOVED: , dbCheck
+app.use("/api/contact", contactRoutes);         // ✅ REMOVED: , dbCheck
+app.use("/api/bookings", bookingRoutes);        // ✅ REMOVED: , dbCheck
 
 // ========== ERROR HANDLERS ==========
 app.use((req, res) => {

@@ -69,7 +69,7 @@ mongoose.connect(mongoURI, {
   }
   
   // Still start server but in limited mode
-  console.log("\n⚠️ Starting server in limited mode (no database)...");
+  console.log("\nStarting server in limited mode (no database)...");
   
   import("./app").then(({ default: app }) => {
     const PORT = process.env.PORT || 5000;

@@ -1,5 +1,5 @@
 import express from "express";
-import cors from "cors";
+//import cors from "cors";
 import fs from "fs";
 import path from "path";
 import mongoose from "mongoose";
@@ -12,14 +12,14 @@ import bookingRoutes from "./routes/bookingRoutes";
 const app = express();
 
 // ========== MIDDLEWARE ==========
-app.use(cors({
-  origin: [
-    "http://localhost:3000",
-    "https://rimsha-lab-frontend.vercel.app",
-    "https://rimsha-lab-admin.vercel.app"
-  ],
-  credentials: true,
-}));
+  // app.use(cors({
+  //   origin: [
+  //     "http://localhost:3001",
+  //     "https://rimsha-lab-frontend.vercel.app",
+  //     "https://rimsha-lab-admin.vercel.app"
+  //   ],
+  //   credentials: true,
+  // }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

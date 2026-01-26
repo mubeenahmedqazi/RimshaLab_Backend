@@ -1,102 +1,83 @@
-// src/server.ts - THIS IS YOUR MAIN FILE
-import express from "express";
-import cors from "cors";
-import fs from "fs";
-import path from "path";
+// src/server.ts
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 
-// Load environment variables
-if (process.env.NODE_ENV !== "production") {
-  dotenv.config(); 
+// Load environment variables FIRST
+dotenv.config();
+
+console.log("=== 🔍 VERCEL DEPLOYMENT CHECK ===");
+console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("MONGODB_URI exists:", !!process.env.MONGODB_URI);
+console.log("MONGO_URI exists:", !!process.env.MONGO_URI);
+console.log("PORT:", process.env.PORT);
+
+// Get MongoDB URI (try both common names)
+const mongoURI = process.env.MONGODB_URI || process.env.MONGO_URI;
+
+if (!mongoURI) {
+  console.error("❌ CRITICAL: No MongoDB URI found in environment variables!");
+  console.log("Available env vars:", Object.keys(process.env).join(", "));
+  process.exit(1);
 }
 
-// Import connectDB
-import connectDB from "./config/db";
+// Hide password in logs for security
+const safeUri = mongoURI.replace(/:([^:@]+)@/, ':****@');
+console.log("MongoDB URI:", safeUri);
 
-// Import routes
-import healthCardRoutes from "./routes/healthCardRoutes";
-import contactRoutes from "./routes/contactRoutes";
-import bookingRoutes from "./routes/bookingRoutes";
-
-// ✅ CONNECT TO MONGODB FIRST
-connectDB();
-
-const app = express();
-
-// ✅ Update CORS with your actual frontend URL
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000", 
-      "https://rimsha-lab-frontend.vercel.app"  // <-- CHANGE THIS!
-    ],
-    methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
-    credentials: true,
-  })
-);
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Ensure uploads folder exists
-const uploadPath = path.join(process.cwd(), "uploads");
-if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath, { recursive: true });
-app.use("/uploads", express.static(uploadPath));
-
-// ✅ Health check with DB status
-app.get("/", (req, res) => {
-  const dbStatus = mongoose.connection.readyState === 1 ? "connected" : "disconnected";
+// Connect to MongoDB
+mongoose.connect(mongoURI, {
+  serverSelectionTimeoutMS: 10000,
+  socketTimeoutMS: 45000,
+})
+.then(() => {
+  console.log("✅ MongoDB Connected Successfully!");
+  console.log(`📊 Database: ${mongoose.connection.name}`);
   
-  res.json({
-    success: true,
-    message: `Backend is live! MongoDB: ${dbStatus}`,
-    endpoints: [
-      "/api/health-card",
-      "/api/contact", 
-      "/api/bookings",
-      "/api/db-status"  // New endpoint
-    ]
-  });
-});
-
-// ✅ Add DB status endpoint
-app.get("/api/db-status", (req, res) => {
-  const isConnected = mongoose.connection.readyState === 1;
-  res.json({
-    success: isConnected,
-    message: isConnected ? "✅ MongoDB Connected" : "❌ MongoDB Not Connected",
-    readyState: mongoose.connection.readyState,
-    state: ["disconnected", "connected", "connecting", "disconnecting"][mongoose.connection.readyState],
-    env: process.env.NODE_ENV,
-    hasMongoUri: !!(process.env.MONGO_URI || process.env.MONGODB_URI)
-  });
-});
-
-// Routes
-app.use("/api/health-card", healthCardRoutes);
-app.use("/api/contact", contactRoutes);
-app.use("/api/bookings", bookingRoutes);
-
-// 404
-app.use((req, res) => {
-  res.status(404).json({ success: false, message: "Route not found" });
-});
-
-// Error handler
-app.use(
-  (err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error(err.stack);
-    res.status(500).json({
-      success: false,
-      message: "Something went wrong!",
-      error: process.env.NODE_ENV === "development" ? err.message : undefined,
+  // Start the server AFTER MongoDB connects
+  import("./app").then(({ default: app }) => {
+    const PORT = process.env.PORT || 5000;
+    const server = app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`🌐 URL: https://rimsha-lab-backend.vercel.app`);
     });
+    
+    // Handle graceful shutdown
+    process.on('SIGTERM', () => {
+      console.log('SIGTERM received, shutting down gracefully');
+      server.close(() => {
+        mongoose.connection.close();
+        console.log('Server closed');
+        process.exit(0);
+      });
+    });
+  });
+})
+.catch((error) => {
+  console.error("❌ MongoDB Connection Failed!");
+  console.error("Error name:", error.name);
+  console.error("Error message:", error.message);
+  console.error("Error code:", error.code);
+  
+  if (error.name === 'MongoServerSelectionError') {
+    console.error("\n🔧 TROUBLESHOOTING:");
+    console.error("1. Check MongoDB Atlas → Network Access → IP Whitelist");
+    console.error("2. Add IP: 0.0.0.0/0 (allow all)");
+    console.error("3. Check if MongoDB cluster is active");
+    console.error("4. Verify username/password in connection string");
   }
-);
+  
+  process.exit(1);
+});
 
-// Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Handle MongoDB connection events
+mongoose.connection.on('connected', () => {
+  console.log('Mongoose connected to DB');
+});
+
+mongoose.connection.on('error', (err) => {
+  console.error('Mongoose connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('Mongoose disconnected');
 });

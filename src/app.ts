@@ -17,7 +17,7 @@ const app = express();
 // ✅ CORS: allow frontend requests
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://your-frontend-vercel-url.vercel.app"], // add your frontend/admin URLs
+    origin: ["http://localhost:3000", "https://rimsha-lab-frontend.vercel.app/"], // add your frontend/admin URLs
     methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
     credentials: true,
   })

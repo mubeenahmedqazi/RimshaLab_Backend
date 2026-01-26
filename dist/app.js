@@ -3,31 +3,32 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+// app.ts
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
-const dotenv_1 = __importDefault(require("dotenv"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
+const dotenv_1 = __importDefault(require("dotenv"));
+// Load environment variables first
+dotenv_1.default.config({ path: ".env.local" });
 // Import routes
 const healthCardRoutes_1 = __importDefault(require("./routes/healthCardRoutes"));
 const contactRoutes_1 = __importDefault(require("./routes/contactRoutes"));
 const bookingRoutes_1 = __importDefault(require("./routes/bookingRoutes"));
-dotenv_1.default.config();
 const app = (0, express_1.default)();
 // -------------------
 // Middleware
 // -------------------
 app.use((0, cors_1.default)());
-app.use(express_1.default.json()); // for parsing application/json
-app.use(express_1.default.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
+app.use(express_1.default.json());
+app.use(express_1.default.urlencoded({ extended: true }));
 // -------------------
 // Ensure uploads folder exists
 // -------------------
-const uploadPath = path_1.default.join(__dirname, "../uploads");
+const uploadPath = path_1.default.join(process.cwd(), "uploads");
 if (!fs_1.default.existsSync(uploadPath)) {
     fs_1.default.mkdirSync(uploadPath, { recursive: true });
 }
-// Serve static files from uploads directory
 app.use("/uploads", express_1.default.static(uploadPath));
 // -------------------
 // Routes
@@ -51,22 +52,14 @@ app.use((err, req, res, next) => {
     res.status(500).json({
         success: false,
         message: "Something went wrong!",
-        error: process.env.NODE_ENV === 'development' ? err.message : undefined
+        error: process.env.NODE_ENV === "development" ? err.message : undefined,
     });
 });
-// 404 handler for unmatched routes
+// 404 handler
 app.use((req, res) => {
     res.status(404).json({
         success: false,
-        message: "Route not found"
+        message: "Route not found",
     });
-});
-// -------------------
-// Start Server
-// -------------------
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 exports.default = app;

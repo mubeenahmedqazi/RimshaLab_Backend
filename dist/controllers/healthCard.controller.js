@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyHealthCardRequest = exports.getHealthCardRequests = exports.deleteHealthCard = exports.updateHealthCardStatus = exports.getHealthCardByCnic = exports.getHealthCardById = exports.getHealthCards = exports.applyHealthCard = void 0;
-const cloudinary = require("../utils/cloudinary");
+const cloudinary_1 = __importDefault(require("../utils/cloudinary"));
 const HealthCard_1 = __importDefault(require("../models/HealthCard"));
 // Format CNIC -> 
 function formatCNIC(cnic) {
@@ -32,7 +32,7 @@ const applyHealthCard = async (req, res) => {
         let imageUrl = "";
         if (req.file && req.file.path) {
             try {
-                const uploadedImage = await cloudinary.uploader.upload(req.file.path, {
+                const uploadedImage = await cloudinary_1.default.uploader.upload(req.file.path, {
                     folder: "healthCards",
                 });
                 imageUrl = uploadedImage.secure_url;

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-const cloudinary = require("../utils/cloudinary");
+import cloudinary from "../utils/cloudinary";
 import HealthCard from "../models/HealthCard";
 
 // Format CNIC -> 

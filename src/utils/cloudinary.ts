@@ -1,4 +1,7 @@
-import { v2 as cloudinary } from 'cloudinary';
+import { v2 as cloudinary } from "cloudinary";
+import dotenv from "dotenv";
+
+dotenv.config({ path: ".env.local" }); // ensure env is loaded
 
 const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
 const apiKey = process.env.CLOUDINARY_API_KEY;
@@ -14,4 +17,4 @@ cloudinary.config({
   api_secret: apiSecret,
 });
 
-export default cloudinary;  // Change to export default
+export default cloudinary;

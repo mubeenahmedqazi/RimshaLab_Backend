@@ -1,20 +1,23 @@
-import app from "./app"
-import connectDB from "./config/db"
-import dotenv from "dotenv"
+// server.ts
+import dotenv from "dotenv";
+dotenv.config({ path: ".env.local" }); // must be first
 
-dotenv.config()
+import app from "./app";
+import connectDB from "./config/db";
 
-let isConnected = false
+const PORT = process.env.PORT || 5000;
 
-export default async function handler(req: any, res: any) {
+const startServer = async (): Promise<void> => {
   try {
-    if (!isConnected) {
-      await connectDB()
-      isConnected = true
-    }
-    return app(req, res)
+    await connectDB();
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
+    });
   } catch (error) {
-    console.error("Serverless error:", error)
-    res.status(500).json({ message: "Internal Server Error" })
+    console.error("Failed to start server:", error);
+    process.exit(1);
   }
-}
+};
+
+startServer();

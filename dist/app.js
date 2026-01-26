@@ -3,14 +3,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// app.ts
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const dotenv_1 = __importDefault(require("dotenv"));
-// Load environment variables first
-dotenv_1.default.config({ path: ".env.local" });
+// Load environment variables ONLY for local dev
+if (process.env.NODE_ENV !== "production") {
+    dotenv_1.default.config(); // automatically picks up .env.local or .env
+}
 // Import routes
 const healthCardRoutes_1 = __importDefault(require("./routes/healthCardRoutes"));
 const contactRoutes_1 = __importDefault(require("./routes/contactRoutes"));

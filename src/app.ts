@@ -48,6 +48,14 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+// ✅ Root route for `/`
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "Backend is live! Use /api/health-card, /api/contact, /api/bookings",
+  });
+});
+
 // -------------------
 // Error Handling
 // -------------------

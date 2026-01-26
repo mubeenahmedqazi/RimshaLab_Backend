@@ -1,23 +1,19 @@
-// server.ts
-import dotenv from "dotenv";
-dotenv.config({ path: ".env.local" }); // must be first
+// config/db.ts
+import mongoose from "mongoose";
 
-import app from "./app";
-import connectDB from "./config/db";
-
-const PORT = process.env.PORT || 5000;
-
-const startServer = async (): Promise<void> => {
+const connectDB = async () => {
   try {
-    await connectDB();
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-      console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
-    });
+    if (!process.env.MONGO_URI) {
+      throw new Error("MONGO_URI is not defined in environment variables!");
+    }
+
+    const conn = await mongoose.connect(process.env.MONGO_URI);
+
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    console.error("Failed to start server:", error);
-    process.exit(1);
+    console.error("MongoDB connection failed:", error);
+    process.exit(1); // stop server if DB not connected
   }
 };
 
-startServer();
+export default connectDB;

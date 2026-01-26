@@ -1,12 +1,13 @@
-// app.ts
 import express from "express";
 import cors from "cors";
 import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
 
-// Load environment variables first
-dotenv.config({ path: ".env.local" });
+// Load environment variables ONLY for local dev
+if (process.env.NODE_ENV !== "production") {
+  dotenv.config(); // automatically picks up .env.local or .env
+}
 
 // Import routes
 import healthCardRoutes from "./routes/healthCardRoutes";

@@ -1,14 +1,22 @@
 import mongoose from "mongoose";
 
+const MONGODB_URI = process.env.MONGODB_URI as string;
+
+if (!MONGODB_URI) {
+  console.warn("⚠️ MONGODB_URI not set");
+}
+
 const connectDB = async () => {
-  const uri = process.env.MONGODB_URI || process.env.MONGO_URI;
-  if (!uri) throw new Error("MongoDB URI missing");
+  if (mongoose.connection.readyState === 1) return;
 
-  await mongoose.connect(uri, {
-    serverSelectionTimeoutMS: 15000,
-  });
-
-  console.log("✅ MongoDB Connected:", mongoose.connection.name);
+  try {
+    await mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000
+    });
+    console.log("✅ MongoDB connected");
+  } catch (err: any) {
+    console.error("❌ MongoDB connection error:", err.message);
+  }
 };
 
 export default connectDB;

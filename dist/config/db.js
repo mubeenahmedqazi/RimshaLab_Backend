@@ -4,13 +4,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
+const MONGODB_URI = process.env.MONGODB_URI;
+if (!MONGODB_URI) {
+    console.warn("⚠️ MONGODB_URI not set");
+}
 const connectDB = async () => {
-    const uri = process.env.MONGODB_URI || process.env.MONGO_URI;
-    if (!uri)
-        throw new Error("MongoDB URI missing");
-    await mongoose_1.default.connect(uri, {
-        serverSelectionTimeoutMS: 15000,
-    });
-    console.log("✅ MongoDB Connected:", mongoose_1.default.connection.name);
+    if (mongoose_1.default.connection.readyState === 1)
+        return;
+    try {
+        await mongoose_1.default.connect(MONGODB_URI, {
+            serverSelectionTimeoutMS: 5000
+        });
+        console.log("✅ MongoDB connected");
+    }
+    catch (err) {
+        console.error("❌ MongoDB connection error:", err.message);
+    }
 };
 exports.default = connectDB;

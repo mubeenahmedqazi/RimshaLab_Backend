@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
+import connectDB from "./config/db";
 
 import healthCardRoutes from "./routes/healthCardRoutes";
 import contactRoutes from "./routes/contactRoutes";
@@ -11,17 +12,21 @@ const app = express();
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
-app.get("/", (_req, res) => {
-  res.json({
-    success: true,
-    database: mongoose.connection.readyState === 1 ? "Connected" : "Disconnected",
-  });
+/* 🔑 Background DB connection */
+app.use((_req, _res, next) => {
+  if (mongoose.connection.readyState !== 1) {
+    connectDB();
+  }
+  next();
 });
 
+/* ✅ Health check */
 app.get("/db-status", (_req, res) => {
+  const states = ["Disconnected", "Connected", "Connecting", "Disconnecting"];
+
   res.json({
     connected: mongoose.connection.readyState === 1,
-    state: mongoose.connection.readyState,
+    state: states[mongoose.connection.readyState]
   });
 });
 

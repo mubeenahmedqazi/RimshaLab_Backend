@@ -7,15 +7,20 @@ const express_1 = __importDefault(require("express"));
 const multer_1 = __importDefault(require("multer"));
 const healthCard_controller_1 = require("../controllers/healthCard.controller");
 const router = express_1.default.Router();
-// Memory storage for Vercel (no local files)
 const storage = multer_1.default.memoryStorage();
 const upload = (0, multer_1.default)({ storage });
-// Routes - FIXED ORDER
-router.post("/apply", upload.single("image"), healthCard_controller_1.applyHealthCard); // This should come first
-router.get("/by-cnic/:cnic", healthCard_controller_1.getHealthCardByCnic); // Specific routes first
-router.get("/requests", healthCard_controller_1.getHealthCardRequests); // Specific routes first
-router.get("/", healthCard_controller_1.getHealthCards); // This is fine here
-router.get("/:id", healthCard_controller_1.getHealthCardById); // Generic param route LAST
+// ✅ CORRECT ORDER with GET for apply page
+router.get("/apply", (req, res) => {
+    res.json({
+        success: true,
+        message: "Health card application form endpoint. Use POST to submit."
+    });
+});
+router.post("/apply", upload.single("image"), healthCard_controller_1.applyHealthCard);
+router.get("/by-cnic/:cnic", healthCard_controller_1.getHealthCardByCnic);
+router.get("/requests", healthCard_controller_1.getHealthCardRequests);
+router.get("/", healthCard_controller_1.getHealthCards);
+router.get("/:id", healthCard_controller_1.getHealthCardById);
 router.patch("/verify/:id", healthCard_controller_1.verifyHealthCardRequest);
 router.patch("/:id/status", healthCard_controller_1.updateHealthCardStatus);
 router.delete("/:id", healthCard_controller_1.deleteHealthCard);

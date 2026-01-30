@@ -13,16 +13,22 @@ import {
 
 const router = express.Router();
 
-// Memory storage for Vercel (no local files)
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// Routes - FIXED ORDER
-router.post("/apply", upload.single("image"), applyHealthCard);  
-router.get("/by-cnic/:cnic", getHealthCardByCnic);             
-router.get("/requests", getHealthCardRequests);                
-router.get("/", getHealthCards);                               
-router.get("/:id", getHealthCardById);                         
+// ✅ CORRECT ORDER with GET for apply page
+router.get("/apply", (req, res) => {
+  res.json({ 
+    success: true, 
+    message: "Health card application form endpoint. Use POST to submit." 
+  });
+});
+
+router.post("/apply", upload.single("image"), applyHealthCard);
+router.get("/by-cnic/:cnic", getHealthCardByCnic);
+router.get("/requests", getHealthCardRequests);
+router.get("/", getHealthCards);
+router.get("/:id", getHealthCardById);
 router.patch("/verify/:id", verifyHealthCardRequest);
 router.patch("/:id/status", updateHealthCardStatus);
 router.delete("/:id", deleteHealthCard);

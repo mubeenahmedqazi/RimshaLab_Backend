@@ -29,18 +29,32 @@ export const applyHealthCard = async (req: Request, res: Response) => {
     }
 
     let imageUrl = "";
-    if (req.file && req.file.path) {
+    if (req.file && req.file.buffer) {
       try {
-        const uploadedImage = await cloudinary.uploader.upload(req.file.path, {
+        console.log("Uploading image to Cloudinary...");
+        console.log("File size:", req.file.size);
+        console.log("File type:", req.file.mimetype);
+
+        // Convert buffer to base64 for Cloudinary
+        const b64 = Buffer.from(req.file.buffer).toString('base64');
+        const dataURI = `data:${req.file.mimetype};base64,${b64}`;
+
+        const uploadedImage = await cloudinary.uploader.upload(dataURI, {
           folder: "healthCards",
         });
+
+        console.log("Cloudinary upload successful:", uploadedImage.secure_url);
         imageUrl = uploadedImage.secure_url;
       } catch (cloudinaryError: any) {
-        return res.status(500).json({ 
-          success: false, 
-          message: "Image upload failed: " + cloudinaryError.message 
+        console.error("Cloudinary error:", cloudinaryError);
+        return res.status(500).json({
+          success: false,
+          message: "Image upload failed: " + cloudinaryError.message
         });
       }
+    } else {
+      console.log("No image file found in request");
+      console.log("req.file:", req.file);
     }
 
     const newCard = new HealthCard({

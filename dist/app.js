@@ -20,6 +20,9 @@ app.use((_req, _res, next) => {
     }
     next();
 });
+app.get("/", (_req, res) => {
+    res.send("🚀 Rimsha Lab Backend is running!");
+});
 /* ✅ Health check */
 app.get("/db-status", (_req, res) => {
     const states = ["Disconnected", "Connected", "Connecting", "Disconnecting"];
